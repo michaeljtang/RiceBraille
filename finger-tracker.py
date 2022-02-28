@@ -5,13 +5,25 @@ import pickle
 import numpy as np
 import pandas as pd
 import csv
+import os
 mp_drawing = mp.solutions.drawing_utils # Drawing helpers
 mp_holistic = mp.solutions.holistic # Mediapipe Solutions
 mp_hands = mp.solutions.hands
 
-#video_file_name = '5.mp4'
+
+#Define the path to the input video file here:
 #video_file_name = './test_images/5.mp4'
 video_file_name = './test_images/IMG_1286.MOV'
+
+#Define the desired path to the output csv file containing finger coordinates here:
+csv_output_name = './coords.csv'
+
+
+#Change the output csv file name to a name that isn't already in use
+file_no=0
+while os.path.isfile(csv_output_name[:-4]+"_"+str(file_no)+".csv"):
+    file_no+=1
+csv_output_name = csv_output_name[:-4]+"_"+str(file_no)+".csv"
 
 cap = cv2.VideoCapture(video_file_name)
 # Initiate holistic model
@@ -44,7 +56,7 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
             for num, hand in enumerate(results.multi_hand_landmarks):
                 Thumb = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.THUMB_TIP]
                 Index = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-                Middle = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                Middle = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
                 Ring = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.RING_FINGER_TIP]
                 Pinky = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.PINKY_TIP]
                 mp_drawing.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS,
@@ -83,14 +95,21 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
                  idealy: the step will be uncomment this line, 
                  commnent the next append csv line and then the file will be cleared.
                 """
-                with open('coords.csv', mode='w', newline='') as f:
-                    csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                    csv_writer.writerow(landmarks)
 
-                # #Export to CSV
-                # with open('coords.csv', mode='a', newline='') as f:
-                #             csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                #             csv_writer.writerow(row)
+                #If the coordinates file doesn't already exist
+                if not os.path.isfile(csv_output_name):
+                    with open(csv_output_name, mode='w', newline='') as f:
+                        csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        csv_writer.writerow(landmarks)
+
+                # # #Export to CSV
+                with open(csv_output_name, mode='a', newline='') as f:
+                    csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    csv_writer.writerow(row)
+
+
+
+
 
 
 

@@ -106,6 +106,10 @@ envRiceBraille/
 test_output/output.mp4
 BrailleOutput.txt
 test_output/output.mp4
+test_images/5.mp4
 *.MOV
 *.jpg
 *.MOV
+
+# for Mac users
+.DS_Store
