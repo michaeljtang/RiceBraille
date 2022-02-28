@@ -11,6 +11,10 @@ mp_holistic = mp.solutions.holistic # Mediapipe Solutions
 mp_hands = mp.solutions.hands
 
 
+###
+
+# INPUTS
+
 #Define the path to the input video file here:
 #video_file_name = './test_images/5.mp4'
 video_file_name = './test_images/IMG_1286.MOV'
@@ -18,8 +22,11 @@ video_file_name = './test_images/IMG_1286.MOV'
 #Define the desired path to the output csv file containing finger coordinates here:
 csv_output_name = './coords.csv'
 
+###
 
-#Change the output csv file name to a name that isn't already in use
+
+
+# This changes the output csv file name to a name that isn't already in use
 file_no=0
 while os.path.isfile(csv_output_name[:-4]+"_"+str(file_no)+".csv"):
     file_no+=1
@@ -106,12 +113,6 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
                 with open(csv_output_name, mode='a', newline='') as f:
                     csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                     csv_writer.writerow(row)
-
-
-
-
-
-
 
         cv2.imshow('Raw Webcam Feed', image)
 
