@@ -89,6 +89,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+envRiceBraille/
 
 # Spyder project settings
 .spyderproject

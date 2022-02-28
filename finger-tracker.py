@@ -9,76 +9,88 @@ mp_drawing = mp.solutions.drawing_utils # Drawing helpers
 mp_holistic = mp.solutions.holistic # Mediapipe Solutions
 mp_hands = mp.solutions.hands
 
-cap = cv2.VideoCapture('5.mp4')
+#video_file_name = '5.mp4'
+#video_file_name = './test_images/5.mp4'
+video_file_name = './test_images/IMG_1286.MOV'
+
+cap = cv2.VideoCapture(video_file_name)
 # Initiate holistic model
-with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
     while cap.isOpened():
         ret, frame = cap.read()
 
-        # Recolor Feed
+        # BGR 2 RGB
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Flip on horizontal
+        image = cv2.flip(image, 1)
+
+        # Set flag
         image.flags.writeable = False
 
-        # Make Detections
-        results = holistic.process(image)
-        # print(results.face_landmarks)
+        # Detections
+        results = hands.process(image)
 
-        # face_landmarks, pose_landmarks, left_hand_landmarks, right_hand_landmarks
-
-        # Recolor image back to BGR for rendering
+        # Set flag to true
         image.flags.writeable = True
+
+        # RGB 2 BGR
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
-        # 1. Draw face landmarks
-        mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACE_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(80, 110, 10), thickness=1, circle_radius=1),
-                                  mp_drawing.DrawingSpec(color=(80, 256, 121), thickness=1, circle_radius=1)
-                                  )
+        # Detections
+        pose = results.multi_hand_landmarks
+        # Rendering results
+        if results.multi_hand_landmarks:
+            for num, hand in enumerate(results.multi_hand_landmarks):
+                Thumb = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.THUMB_TIP]
+                Index = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                Middle = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                Ring = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.RING_FINGER_TIP]
+                Pinky = results.multi_hand_landmarks[0].landmark[mp_hands.HandLandmark.PINKY_TIP]
+                mp_drawing.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS,
+                                          mp_drawing.DrawingSpec(color=(121, 22, 76), thickness=2, circle_radius=4),
+                                          mp_drawing.DrawingSpec(color=(250, 44, 250), thickness=2, circle_radius=2),
+                                          )
+                T = list(
+                    np.array([[Thumb.x, Thumb.y, Thumb.z] for landmark in pose]).flatten())
+                I = list(
+                    np.array([[Index.x, Index.y, Index.z] for landmark in pose]).flatten())
+                M = list(
+                    np.array([[Middle.x, Middle.y, Middle.z] for landmark in pose]).flatten())
+                R = list(
+                    np.array([[Ring.x, Ring.y, Ring.z] for landmark in pose]).flatten())
+                P = list(
+                    np.array([[Pinky.x, Pinky.y, Pinky.z] for landmark in pose]).flatten())
 
-        # 2. Right hand
-        mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(80, 22, 10), thickness=2, circle_radius=4),
-                                  mp_drawing.DrawingSpec(color=(80, 44, 121), thickness=2, circle_radius=2)
-                                  )
-
-        # 3. Left Hand
-        mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(121, 22, 76), thickness=2, circle_radius=4),
-                                  mp_drawing.DrawingSpec(color=(121, 44, 250), thickness=2, circle_radius=2)
-                                  )
-
-        # 4. Pose Detections
-        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=4),
-                                  mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2)
-                                  )
-        # Export coordinates
-
-            # Extract Pose landmarks
-        with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) as hands:
-            res = hands.process(image)
-            pose_row = []
-            pose = res.multi_hand_landmarks
-            print(pose)
-            try:
-                pose_row = list(
-                    np.array([[landmark.x, landmark.y, landmark.z] for landmark in pose]).flatten())
-
-            # Concate rows
-                row = pose_row
-                class_name = 'hand_landmarks'
-            # Append class name
+                    # Concate rows
+                row = T+I+M+R+P
+                class_name = 'Video1'
+                    # Append class name
                 row.insert(0, class_name)
-            except:
-                pass
+                num_coords = len(pose)
+                landmarks = ['Frame']
+                for val in range(1, num_coords + 1):
+                    landmarks += ['ThumbX{}'.format(val),'ThumbY{}'.format(val),'ThumbZ{}'.format(val),
+                                  'IndexX{}'.format(val), 'IndexY{}'.format(val),'IndexZ{}'.format(val),
+                                  'MiddleX{}'.format(val), 'MiddleY{}'.format(val),'MiddleZ{}'.format(val),
+                                  'RingX{}'.format(val),'RingY{}'.format(val),'RingZ{}'.format(val),
+                                  'PinkyX{}'.format(val),'PinkyY{}'.format(val),'PinkyZ{}'.format(val)]
+                    # print(landmarks)
+                """
+                this is going to write the landmarks"['class', 'x1', 'y1', 'z1', 'v1', 'x2', 'y2', 'z2', 'v2', 'x3', 'y3', 'z3', 'v3', 'x4', 'y4', 'z4', 'v4', 'x5', 'y5', 'z5', 'v5', 'x6', 'y6', 'z6', 'v6', 'x7', 'y7"
+                to the csv(excel) named "coords" in the same folder
+                use this next line only to create new csv file.it will only create one line of data,
+                 idealy: the step will be uncomment this line, 
+                 commnent the next append csv line and then the file will be cleared.
+                """
+                with open('coords.csv', mode='w', newline='') as f:
+                    csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    csv_writer.writerow(landmarks)
 
-
-            # Export to CSV
-        with open('finger.csv', mode='a', newline='') as f:
-                csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                csv_writer.writerow(row)
-
-
+                # #Export to CSV
+                # with open('coords.csv', mode='a', newline='') as f:
+                #             csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                #             csv_writer.writerow(row)
 
 
 
